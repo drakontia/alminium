@@ -187,6 +187,7 @@ fi
 cp config/database.yml $INSTALL_DIR/config/
 cp config/scm.yml $INSTALL_DIR/config/
 cp -r theme/* $INSTALL_DIR/public/themes/
+git config --system core.quotepath false
 
 # setup
 pushd . 
