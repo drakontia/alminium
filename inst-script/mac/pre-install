@@ -8,7 +8,7 @@ echo "共有で、Web共有がHTTPSとSSLに、リモートログインがSSHに
 echo 
 echo -n "アプリケーションを動作させるためにセキュリティの設定を行いますか?[Y/n]"
 
-sudo port install `grep -v "^#" inst-script/rhel6/packages.lst`
+sudo port install `grep -v "^#" inst-script/mac/packages.lst`
 
 if [ "$SSL" = "y" ]
 then
@@ -28,8 +28,10 @@ awk -F = '
     {
 	print "mysql.default_socket = /opt/local/var/run/mysql5/mysqld.sock"
     } else if ( $1 ~ /mysqli.default_socket/ )
+    {
 	print "mysqli.default_socket = /opt/local/var/run/mysql5/mysqld.sock"
-    } else {
+    } else
+    {
         print $0
     }
   }while ( getline > 0 )

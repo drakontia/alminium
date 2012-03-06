@@ -52,8 +52,8 @@ then
     MYSQLD=mysql
     echo "Debian / Ubuntu が検出されました。"
 else
-    CHK=`sw_vers | awk '$1 = "ProductName"{ OS = $1; getline; print $OS,$2 }`
-    if [ $CHK != '' ]
+    CHK=`sw_vers | awk '$1 = "ProductName"{ _OS = $2; getline; print _OS,$2; exit }'`
+    if [ "$CHK" != '' ]
     then
 	OS='mac'
 	MYSQLD='mysql5'
@@ -151,8 +151,16 @@ fi
 
 if [ ! -f theme/railsgun/license.txt ]
 then
+  case $OS in
+    rhel6)
   git submodule init
   git submodule update
+    ;;
+    mac)
+	sudo git submodule init
+	sudo git submodule update
+    ;;
+  esac
 fi
 
 if [ ! -f gems.installed ]
@@ -190,30 +198,35 @@ then
   fi
   #tar zxf cache/redmine-$RM_VER.tar.gz
 
-  #(cd redmine-$RM_VER; patch -p1 -R < ../patch/redmine_disable_saltpassword.patch)
-
   $CPCMD cache/redmine_$RM_VER/* $INSTALL_DIR/
   $RMCMD cache/redmine_$RM_VER
 fi
 
 cp config/database.yml $INSTALL_DIR/config/
 cp config/scm.yml $INSTALL_DIR/config/
-$CPCMD theme/* $INSTALL_DIR/public/themes/
+$CPCMD themes $INSTALL_DIR/public/
 
 # setup
 pushd . 
 cd $INSTALL_DIR
 rake generate_session_store
-rake db:migrate
+rake db:migrate RAILS_ENV=production
 echo "ja" |RAILS_ENV=production rake redmine:load_default_data
 
 popd
 
 # install plugins
+case $OS in
+rhel6)
 source inst-script/redmine-plugins
+;;
+mac)
+source inst-script/mac/redmine-plugins
+;;
+esac
 
 # Customize
-mysql alminium < config/init.mysql
+$MYSQLD alminium < config/init.mysql
 
 mkdir -p /etc/opt/alminium
 $CPCMD etc/* /etc/opt/alminium/
@@ -225,8 +238,8 @@ $CPCMD hooks $INSTALL_DIR/
 
 #chown $APACHE_USER.$APACHE_USER -R $INSTALL_DIR
 #chown $APACHE_USER.$APACHE_USER -R /var/opt/alminium
-chown -R $APACHE_USER:$APACHE_USER $INSTALL_DIR
-chown -R $APACHE_USER:$APACHE_USER /var/opt/alminium
+sudo chown -R $APACHE_USER:$APACHE_USER $INSTALL_DIR
+sudo chown -R $APACHE_USER:$APACHE_USER /var/opt/alminium
 
 source inst-script/$OS/post-install
 
