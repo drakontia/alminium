@@ -8,13 +8,13 @@ VER=(`grep -v "^#" config/rubygems.lst | awk -F, '{print $2}'`)
 for (( i = 0; i < ${#NAME[@]}; ++i ))
 do
   NAME=${NAME[$i]}
-  VER=${VER[$i]} 
+  VER=${VER[$i]}
   case $OS in
   rhel6)
     if [ "$VER" = "-" ]
     then
       gem install $NAME --no-rdoc --no-ri
-    else 
+    else
       gem install $NAME -v=$VER --no-rdoc --no-ri
     fi
     ;;
@@ -22,9 +22,10 @@ do
     if [ "$VER" = "-" ]
     then
       sudo gem install $NAME --no-rdoc --no-ri
-    else 
+    else
       sudo gem install $NAME -v=$VER --no-rdoc --no-ri
     fi
+    sudo rdoc install
     ;;
   esac
 done
@@ -32,7 +33,7 @@ done
 
 ## install mod_passenger
 case $OS in
-    rhel6) 
+    rhel6)
         if [ ! -f /usr/lib/ruby/gems/1.8/gems/passenger-3.*/ext/apache2/mod_passenger.so ]
         then
             gem install passenger --no-rdoc --no-ri
@@ -40,27 +41,31 @@ case $OS in
         fi
         ;;
     mac)
-	if [ ! -f /Library/Ruby/Gems/1.8/gems/passenger-3.*/ext/apache2/mod_passenger.so ]
+  if [ ! -f /Library/Ruby/Gems/1.8/gems/passenger-3.*/ext/apache2/mod_passenger.so ]
         then
             sudo gem install passenger --no-rdoc --no-ri
-	    export APXS2=/opt/local/apache2/bin/apxs
-	    export PATH=/opt/local/apache2/bin:$PATH
+            export APXS2=/opt/local/apache2/bin/apxs
+            export PATH=/opt/local/apache2/bin:$PATH
             sudo passenger-install-apache2-module --auto
         fi
         ;;
 esac
 
+if [ $OS = 'mac' ]
+then
+  gem install nokogiri --no-rdoc --no-ri -- --with-xml2-include=/opt/local/include/libxml2 --with-xml2-lib=/opt/local/lib --with-xslt-dir=/opt/local
+fi
 #pushd .
 
 #cd cache
 #if [ ! -f redcarpet ]
 #then
 #  git clone https://github.com/alminium/redcarpet.git
-#  cd redcarpet 
+#  cd redcarpet
 #
 #  if [ "$OS" = "rhel6" ]
 #  then
-#      rake install 
+#      rake install
 #  else
 #      gem install rake -=0.8.7 --no-rdoc --no-ri
 #      gem install rake-compiler --no-rdoc --no-ri

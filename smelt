@@ -52,7 +52,7 @@ then
     MYSQLD=mysql
     echo "Debian / Ubuntu が検出されました。"
 else
-    CHK=`sw_vers | awk '$1 = "ProductName"{ _OS = $2; getline; print _OS,$2; exit }'`
+    CHK=`sw_vers | awk '$1 = "ProductName"{ _OS = $2,$3,$4; getline; print _OS,$2; exit }'`
     if [ "$CHK" != '' ]
     then
 	OS='mac'
@@ -151,21 +151,20 @@ fi
 
 if [ ! -f theme/railsgun/license.txt ]
 then
-  case $OS in
-    rhel6)
   git submodule init
   git submodule update
-    ;;
-    mac)
-	sudo git submodule init
-	sudo git submodule update
-    ;;
-  esac
 fi
 
 if [ ! -f gems.installed ]
 then
-  source inst-script/gems
+	case $OS in
+	rhel6)
+        source inst-script/gems
+	    ;;
+	mac)
+        source inst-script/gems.mac
+	    ;;
+    esac
   touch gems.installed
 fi
  
@@ -198,12 +197,20 @@ then
   fi
   #tar zxf cache/redmine-$RM_VER.tar.gz
 
-  $CPCMD cache/redmine_$RM_VER/* $INSTALL_DIR/
+  $CPCMD cache/redmine_$RM_VER/{.*,*} $INSTALL_DIR/
   $RMCMD cache/redmine_$RM_VER
 fi
 
 cp config/database.yml $INSTALL_DIR/config/
-cp config/scm.yml $INSTALL_DIR/config/
+case $OS in
+rhel6)
+    cp config/scm.yml $INSTALL_DIR/config/
+    ;;
+mac)
+    cp config/scm.yml.mac $INSTALL_DIR/config/scm.yml
+    cp config/configuration.yml.mac $INSTALL_DIR/config/configuration.yml
+    ;;
+esac
 $CPCMD themes $INSTALL_DIR/public/
 
 # setup
@@ -218,11 +225,11 @@ popd
 # install plugins
 case $OS in
 rhel6)
-source inst-script/redmine-plugins
-;;
+    source inst-script/redmine-plugins
+    ;;
 mac)
-source inst-script/mac/redmine-plugins
-;;
+    source inst-script/mac/redmine-plugins
+    ;;
 esac
 
 # Customize
@@ -231,7 +238,7 @@ $MYSQLD alminium < config/init.mysql
 mkdir -p /etc/opt/alminium
 $CPCMD etc/* /etc/opt/alminium/
 
-mkdir -p $INSTALL_DIR/bin
+mkdir -p $INSTALL_DIR/bin $INSTALL_DIR/tmp
 mkdir -p /var/opt/alminium/git /var/opt/alminium/svn /var/opt/alminium/hg
 $CPCMD bin/*  $INSTALL_DIR/bin/
 $CPCMD hooks $INSTALL_DIR/
