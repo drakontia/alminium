@@ -61,7 +61,7 @@ do
           fi
         fi
         $RMCMD $INSTALL_DIR/vendor/plugins/${DEST_NAME[$i]}
-        sudo cp -ar cache/${DEST_NAME[$i]} $INSTALL_DIR/vendor/plugins/${DEST_NAME[$i]}
+        sudo cp -aR cache/${DEST_NAME[$i]} $INSTALL_DIR/vendor/plugins/${DEST_NAME[$i]}
         ;;
     esac
 done
