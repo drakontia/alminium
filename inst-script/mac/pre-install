@@ -1,12 +1,10 @@
 #!/bin/bash
-# echo "*******************************************************"
-# echo "  セキュリティの設定"
-# echo "*******************************************************"
-# echo "アプリケーションを動作させるために、Apacheの設定を行います。"
-# echo "ファイアフォールの設定はシステム環境設定から行ってください。"
-# echo "共有で、Web共有がHTTPSとSSLに、リモートログインがSSHに対応しています。"
-# echo 
-# echo -n "アプリケーションを動作させるためにセキュリティの設定を行いますか?[Y/n]"
+echo "*******************************************************"
+echo "  セキュリティの設定"
+echo "*******************************************************"
+echo "ファイアフォールの設定はシステム環境設定から行ってください。"
+echo "共有で、Web共有がHTTPSとSSLに、リモートログインがSSHに対応しています。"
+echo \n
 
 sudo port install `grep -v "^#" inst-script/mac/packages.lst`
 
@@ -16,26 +14,6 @@ then
 fi
 
 sudo -u mysql mysql_install_db5
-if [ ! -f /etc/php.ini ]
-then
-  sudo mv /etc/php.ini config/php.ini
-else
-  sudo cp /etc/php.ini.default config/php.ini
-fi
-awk -F = '
-{ do{
-    if ( $1 ~ /mysql.default_socket/ )
-    {
-	print "mysql.default_socket = /opt/local/var/run/mysql5/mysqld.sock"
-    } else if ( $1 ~ /mysqli.default_socket/ )
-    {
-	print "mysqli.default_socket = /opt/local/var/run/mysql5/mysqld.sock"
-    } else
-    {
-        print $0
-    }
-  }while ( getline > 0 )
-}' config/php.ini > /etc/php.ini
 
 sudo cp config/my.cnf /opt/local/etc/mysql5/
 sudo launchctl load -w /Library/LaunchDaemons/org.macports.mysql5.plist
