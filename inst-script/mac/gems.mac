@@ -9,16 +9,6 @@ for (( i = 0; i < ${#NAME[@]}; ++i ))
 do
   NAME=${NAME[$i]}
   VER=${VER[$i]}
-  case $OS in
-  rhel6)
-    if [ "$VER" = "-" ]
-    then
-      gem install $NAME --no-rdoc --no-ri
-    else
-      gem install $NAME -v=$VER --no-rdoc --no-ri
-    fi
-    ;;
-  mac)
     if [ "$VER" = "-" ]
     then
       sudo gem install $NAME --no-rdoc --no-ri
@@ -26,30 +16,17 @@ do
       sudo gem install $NAME -v=$VER --no-rdoc --no-ri
     fi
     sudo rdoc install
-    ;;
-  esac
 done
 
 
 ## install mod_passenger
-case $OS in
-    rhel6)
-        if [ ! -f /usr/lib/ruby/gems/1.8/gems/passenger-3.*/ext/apache2/mod_passenger.so ]
-        then
-            gem install passenger --no-rdoc --no-ri
-            passenger-install-apache2-module --auto
-        fi
-        ;;
-    mac)
-  if [ ! -f /Library/Ruby/Gems/1.8/gems/passenger-3.*/ext/apache2/mod_passenger.so ]
-        then
-            sudo gem install passenger --no-rdoc --no-ri
-            export APXS2=/opt/local/apache2/bin/apxs
-            export PATH=/opt/local/apache2/bin:$PATH
-            sudo passenger-install-apache2-module --auto
-        fi
-        ;;
-esac
+if [ ! -f /opt/local/lib/ruby/gems/1.8/gems/passenger-3.*/ext/apache2/mod_passenger.so ]
+then
+  sudo gem install passenger --no-rdoc --no-ri
+  export APXS2=/opt/local/apache2/bin/apxs
+  export PATH=/opt/local/apache2/bin:$PATH
+  sudo passenger-install-apache2-module --auto
+fi
 
 if [ $OS = 'mac' ]
 then
