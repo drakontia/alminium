@@ -208,8 +208,8 @@ rhel6)
     cp config/scm.yml $INSTALL_DIR/config/
     ;;
 mac)
-    cp config/scm.yml.mac $INSTALL_DIR/config/scm.yml
-    cp config/configuration.yml.mac $INSTALL_DIR/config/configuration.yml
+    cp inst-script/mac/scm.yml.mac $INSTALL_DIR/config/scm.yml
+    cp inst-script/mac/configuration.yml.mac $INSTALL_DIR/config/configuration.yml
     ;;
 esac
 $CPCMD themes $INSTALL_DIR/public/
