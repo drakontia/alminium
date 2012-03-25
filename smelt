@@ -22,7 +22,6 @@ fi
 if [ -f /etc/redhat-release ]
 then
     APACHE_USER=apache
-    MYSQLD=mysqld
     CHK=`egrep "CentOS release 5|Red Hat Enterprise Linux .* 5" /etc/redhat-release`
     if [ "$CHK" != '' ]
     then
@@ -38,7 +37,6 @@ then
 elif [ -f /etc/system-release ]
 then
     APACHE_USER=apache
-    MYSQLD=mysqld
     CHK=`egrep "Amazon Linux AMI" /etc/system-release`
     if [ "$CHK" != '' ]
     then
@@ -49,7 +47,6 @@ elif [ -f /etc/debian_version ]
 then
     OS='debian'
     APACHE_USER=www-data
-    MYSQLD=mysql
     echo "Debian / Ubuntu が検出されました。"
     echo "インストールに失敗するかも知れませんが、お許しくださいm(__)m"
     echo ""
@@ -60,12 +57,11 @@ else
     CHK=`sw_vers | awk '$1 = "ProductName"{ _OS = $2 " " $3 " " $4; getline; print _OS,$2; exit }'`
     if [ $CHK != '' ]
     then
-  OS='mac'
-  MYSQLD='mysql5'
-    APACHE_USER=www
-  CPCMD='cp -Rf'
-  RMCMD='rm -Rf'
-  echo "${CHK}が検出されました。"
+        OS='mac'
+        APACHE_USER=www
+        CPCMD='cp -Rf'
+        RMCMD='rm -Rf'
+        echo "${CHK}が検出されました。"
     else
       echo "サポートされていないOSです。"
       echo "現在サポートされいているOSは、"
@@ -177,13 +173,14 @@ fi
 case $OS in
   mac)
     sudo /opt/local/share/mysql5/mysql/mysql.server start
+    mysql5 < config/createdb.sql
     ;;
   *)
-    /etc/init.d/$MYSQLD start
+    /etc/init.d/mysqld start
+    mysql < config/createdb.sql
     ;;
 esac
 
-$MYSQLD < config/createdb.sql
 
 # install chiliproject
 mkdir -p $INSTALL_DIR
@@ -225,7 +222,6 @@ cp config/database.yml $INSTALL_DIR/config/
 case $OS in
   mac)
     cp inst-script/mac/scm.yml.mac $INSTALL_DIR/config/scm.yml
-    cp inst-script/mac/configuration.yml.mac $INSTALL_DIR/config/configuration.yml
     ;;
   *)
     cp config/scm.yml $INSTALL_DIR/config/
@@ -253,7 +249,14 @@ case $OS in
 esac
 
 # Customize
-$MYSQLD alminium < config/init.mysql
+case $OS in
+  mac)
+    mysql5 alminium < config/init.mysql
+    ;;
+  *)
+    mysql alminium < config/init.mysql
+    ;;
+esac
 
 mkdir -p /etc/opt/alminium
 $CPCMD etc/* /etc/opt/alminium/
